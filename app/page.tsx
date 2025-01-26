@@ -6,7 +6,6 @@ const jdenticon = typeof window !== "undefined" ? require("jdenticon") : null;
 
 const CursorFollow = () => {
   const [userId, setUserId] = useState<string>("");
-  const [serverIp, setServerIp] = useState<string>("");
   const cursorFollowRef = useRef<HTMLDivElement | null>(null);
   const customCursorRef = useRef<HTMLDivElement | null>(null);
 
@@ -22,56 +21,33 @@ const CursorFollow = () => {
       return newId;
     };
 
-    const fetchServerIp = async () => {
-      const existingIp = localStorage.getItem("server_ip");
-      if (existingIp) {
-        return existingIp;
-      }
-      try {
-        const response = await fetch("https://api.ipify.org?format=json");
-        const data = await response.json();
-        const ip = data.ip;
-        localStorage.setItem("server_ip", ip);
-        return ip;
-      } catch (error) {
-        console.error("サーバーIPアドレスの取得に失敗しました", error);
-        return "0.0.0.0"; //Fallback IP
-      }
-    }
-
-    const initialize = async () => {
-      const id = generateUserId();
-      const ip = await fetchServerIp();
-      setUserId(id);
-      setServerIp(ip);
-    };
-
-    initialize();
+    const id = generateUserId();
+    setUserId(id);
   }, []);
 
   useEffect(() => {
     if (!userId || !cursorFollowRef.current) return;
 
     // Hash the server IP address + user ID and generate Identicon
-    const hashId = async (id: string, ip: string) => {
-      const combinedString = `${ip}-${id}`;
+    const hashId = async (id: string) => {
       const encoder = new TextEncoder();
-      const data = encoder.encode(combinedString);
+      const data = encoder.encode(id);
       const hashBuffer = await crypto.subtle.digest("SHA-256", data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
     };
 
     const setIdenticon = async (identiconSize: number) => {
-      const hashedId = await hashId(userId, serverIp);
+      const hashedId = await hashId(userId);
       const identiconSvg = jdenticon.toSvg(hashedId, identiconSize);
       if (cursorFollowRef.current) {
         cursorFollowRef.current.innerHTML = identiconSvg;
       }
     };
     const identiconSize = 40;
+
     setIdenticon(identiconSize);
-  }, [userId, serverIp]);
+  }, [userId]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
