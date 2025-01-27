@@ -10,42 +10,40 @@ const CursorFollow = () => {
   const customCursorRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Generate or retrieve a unique user ID
-    const generateUserId = () => {
+    // サーバーからハッシュ化されたIDを取得
+    const fetchUserId = async () => {
       const existingId = localStorage.getItem("user_id");
       if (existingId) {
-        return existingId;
+        setUserId(existingId);
+      } else {
+        try {
+          const res = await fetch("/api/generate-id");
+          console.log(res.status)
+          const data = await res.json();
+          const hashedId = data.userId;
+          localStorage.setItem("user_id", hashedId);
+          setUserId(hashedId);
+        } catch (error) {
+          console.error("Failed to fetch user ID:", error);
+        }
       }
-      const newId = crypto.randomUUID();
-      localStorage.setItem("user_id", newId);
-      return newId;
     };
 
-    const id = generateUserId();
-    setUserId(id);
+    fetchUserId();
   }, []);
 
   useEffect(() => {
     if (!userId || !cursorFollowRef.current) return;
 
-    // Hash the server IP address + user ID and generate Identicon
-    const hashId = async (id: string) => {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(id);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
-    };
-
-    const setIdenticon = async (identiconSize: number) => {
-      const hashedId = await hashId(userId);
-      const identiconSvg = jdenticon.toSvg(hashedId, identiconSize);
+    // Identiconを設定
+    const setIdenticon = (identiconSize: number) => {
+      const identiconSvg = jdenticon.toSvg(userId, identiconSize);
       if (cursorFollowRef.current) {
         cursorFollowRef.current.innerHTML = identiconSvg;
       }
     };
-    const identiconSize = 40;
 
+    const identiconSize = 40;
     setIdenticon(identiconSize);
   }, [userId]);
 
