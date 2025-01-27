@@ -18,7 +18,6 @@ const CursorFollow = () => {
       } else {
         try {
           const res = await fetch("/api/generate-id");
-          console.log(res.status)
           const data = await res.json();
           const hashedId = data.userId;
           localStorage.setItem("user_id", hashedId);
