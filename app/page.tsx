@@ -6,6 +6,8 @@ const CursorFollow = () => {
   const [identicon, setIdenticon] = useState<string>("");
   const cursorFollowRef = useRef<HTMLImageElement | null>(null);
   const customCursorRef = useRef<HTMLDivElement | null>(null);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const followPosition = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -39,13 +41,11 @@ const CursorFollow = () => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      setCursorPosition({ x: e.clientX, y: e.clientY });
+
       if (customCursorRef.current) {
         customCursorRef.current.style.left = `${e.clientX}px`;
         customCursorRef.current.style.top = `${e.clientY}px`;
-      }
-      if (cursorFollowRef.current) {
-        cursorFollowRef.current.style.left = `${e.clientX}px`;
-        cursorFollowRef.current.style.top = `${e.clientY}px`;
       }
     };
 
@@ -56,6 +56,31 @@ const CursorFollow = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const lerp = (start: number, end: number, factor: number) => {
+      return start + (end - start) * factor;
+    };
+
+    const followCursor = () => {
+      followPosition.current.x = lerp(followPosition.current.x, cursorPosition.x, 0.05);
+      followPosition.current.y = lerp(followPosition.current.y, cursorPosition.y, 0.05);
+
+      if (cursorFollowRef.current) {
+        cursorFollowRef.current.style.left = `${followPosition.current.x - 17}px`;
+        cursorFollowRef.current.style.top = `${followPosition.current.y - 17}px`;
+      }
+
+      animationFrameId = requestAnimationFrame(followCursor);
+    };
+
+    followCursor();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [cursorPosition]);
 
   return (
     <div className="w-screen h-screen overflow-hidden cursor-none flex justify-center items-center">
@@ -71,7 +96,7 @@ const CursorFollow = () => {
       <div
         ref={customCursorRef}
         className="absolute w-1.5 h-1.5 bg-black dark:bg-white rounded-full pointer-events-none"
-      ></div>
+      />
     </div>
   );
 };
