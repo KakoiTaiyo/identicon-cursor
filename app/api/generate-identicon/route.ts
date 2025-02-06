@@ -15,10 +15,9 @@ export async function GET(req: NextRequest) {
     hash.update(id + serverSecret);
     const hashedId = hash.digest('hex');
 
-    // Identicon生成
+    // Identicon生成（サイズは40px）
     const identiconSvg = jdenticon.toSvg(hashedId, 40);
 
-    // SVGをBase64にエンコード
     const dataUri = `data:image/svg+xml;utf8,${encodeURIComponent(identiconSvg)}`;
 
     return NextResponse.json({ identicon: dataUri });
