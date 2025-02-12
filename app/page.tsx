@@ -1,4 +1,4 @@
-import { Cursor } from "./component/cursor-follow";
+import { Cursor } from "./component/cursor";
 import {
   HomeIcon,
   UserIcon,
