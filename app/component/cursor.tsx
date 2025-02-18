@@ -68,8 +68,8 @@ export function Cursor() {
             followPosition.current.y = lerp(followPosition.current.y, cursorPosition.y, 0.05);
 
             if (cursorFollowRef.current) {
-                cursorFollowRef.current.style.left = `${followPosition.current.x - 17}px`;
-                cursorFollowRef.current.style.top = `${followPosition.current.y - 17}px`;
+                cursorFollowRef.current.style.left = `${followPosition.current.x - 29}px`;
+                cursorFollowRef.current.style.top = `${followPosition.current.y - 29}px`;
             }
 
             animationFrameId = requestAnimationFrame(followCursor);
@@ -88,7 +88,7 @@ export function Cursor() {
                 <img
                     ref={cursorFollowRef}
                     src={identicon}
-                    className="absolute w-10 h-10 pointer-events-none"
+                    className="absolute w-16 h-16 pointer-events-none"
                     alt="Identicon"
                 />
             )}
